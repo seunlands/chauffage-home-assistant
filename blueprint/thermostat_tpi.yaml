@@ -40,13 +40,6 @@ blueprint:
         entity:
           domain: sensor
           device_class: temperature
-    entity_fenetre:
-      name: Fenètre
-      description: Capteur d'ouverture de fenêtre (sensor)
-      selector:
-        entity:
-          domain: binary_sensor
-          device_class: opening
     entity_puissance:
       name: Puissance
       description: Champs d'affichage de la puissance (input_number)
@@ -66,16 +59,12 @@ variables:
   coeff_t: !input coeff_t
   entity_temp_int: !input entity_temp_int
   entity_temp_ext: !input entity_temp_ext
-  entity_fenetre: !input entity_fenetre
 
 trigger:
   - platform: time_pattern
     minutes: "/10"
   - platform: state
     entity_id: !input entity_consigne
-  - platform: state
-    entity_id: !input entity_fenetre
-
 
 action:
   - alias: récupération des données
@@ -84,11 +73,10 @@ action:
       consigne: "{{states(entity_consigne)}}"
       temp_ext: '{{ states(entity_temp_ext) }}'
       temp_int: '{{ states(entity_temp_int) }}'
-      fenetre: '{{states(entity_fenetre)}}'     
+      #fenetre: '{{states(entity_fenetre)}}'     
       puissance: >-
         {%set val = coeff_c * (consigne - temp_int) + coeff_t * (consigne -
-        temp_ext) %}  {% if val > 1 and fenetre == 'off' %} {% set val = 100 %}  {% elif val < 0 or
-        fenetre == 'on' %} {% set val = 0 %}  {% else %} {% set val = ( (val *
+        temp_ext) %}  {% if val > 1 %} {% set val = 100 %}  {% elif val < 0 %} {% set val = 0 %}  {% else %} {% set val = ( (val *
         100) | round(0)) %} {% endif %} {{val}}
       temps_chauffe: '{{ puissance * 6 }}'
   - alias: Met à jour l'indicateur de puissance
